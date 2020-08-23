@@ -17,7 +17,6 @@ public:
 
   Fleet(byte size_fleet);
   int size();
-  bool debug();
   
   void addCommunication(SoftwareSerial *tmp_comm, unsigned long speed);
   void addBoat(Boat *boat);
@@ -25,6 +24,7 @@ public:
   void addKeyBoard(Joystick *joystick);
   
   void println(String message);
+  void println(int message);
   
   void rotateBoat(Boat *boat);
   bool setLocation(Boat *boat);

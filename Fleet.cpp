@@ -14,6 +14,7 @@ void Fleet::addCommunication(SoftwareSerial *tmp_comm, unsigned long speed) {
 
   _comm = tmp_comm;
   _comm->begin(speed);
+ // _comm->println("BEGIN [0xf47]");
 
 
 }//End Fleet::addCommunication
@@ -30,10 +31,18 @@ void Fleet::addMap(Grid *grid) {
 void Fleet::addKeyBoard(Joystick *joystick) {
 
   _joystick = joystick;
+  _joystick->begin();
 
 }//End Fleet::addMap
 
 void Fleet::println(String message) {
+
+  _comm->println(message);
+
+ 
+}//End Fleet::println
+
+void Fleet::println(int message) {
 
   _comm->println(message);
 
@@ -46,7 +55,7 @@ void Fleet::addBoat(Boat *boat) {
   
   boats[_nb_boats] = *boat;
   _nb_boats++;
-  println("New boat called '"+String(boat->getName()+"'"));
+  println(">>> [Fleet] Boat '"+String(boat->getName()+"' added in fleet"));
 
 }//End Fleet::addBoat
 
@@ -55,23 +64,6 @@ int Fleet::size() {
 
   return _nb_boats;
 }
-
-bool Fleet::debug() {
-
-  //std::cout << _boats->getName()[0];
-  //std::cout << "\nFleet information \n";
-  for (int a = 0;a<int(_nb_boats);a++)
-  {
-
-    //std::cout << " -> Boat called '" << _boats[a].getName() << "' with a length of "<<  _boats[a].getLength() << "\n";
-    boats[a].getData();
-
-  }
-
-
-  return false;
-}//End debug
-
 
 
 void Fleet::rotateBoat(Boat *boat) {
@@ -83,25 +75,30 @@ void Fleet::rotateBoat(Boat *boat) {
 
 bool Fleet::setLocation(Boat *boat) {
 
-  int etat;
+  int etat = 0;
   //################# BEGIN ROTATE ##########################
  do {
         
   etat = _joystick->read();
-  println(String(etat));
+  println(etat);
 
-  if (etat==APPUI_COURT) {
+  if (etat==joystick::SHORT_PUSH) {
           
     //lcd.clear();
-    //lcd.print("Rotation...");
+    println("Rotation...");
+    println(boat->getOrientation());
     boat->changeOrientation();
+    println(boat->getOrientation());
     show(boat);
     delay(ANTI_REBOND);
     //lcd.clear();
           
   }//Fin if appui_court
 
- } while(etat!=APPUI_LONG);
+ } while(etat!=joystick::LONG_PUSH);
+ delay(500);
+ println("[Fleet] End rotation");
+ delay(2000);
  
       //################# END ROTATE ##########################
 
@@ -109,52 +106,51 @@ bool Fleet::setLocation(Boat *boat) {
       do {
 
         etat = _joystick->read();
-        
-        switch(etat) {
+        println(_joystick->read());
 
-          case GAUCHE: //gauche
-            moveBoat(boat, LEFT);
+
+          if(etat==joystick::LEFT) { //gauche
+            moveBoat(boat, boat::LEFT);
+            //show(boat);
             delay(DELAI_DEPLACEMENT);
             break;
+          }
 
-          case DROITE:
-            moveBoat(boat, RIGHT);
+          if(etat==joystick::RIGHT) { //droite
+            moveBoat(boat, boat::RIGHT);
+            //show(boat);
             delay(DELAI_DEPLACEMENT);
             break;
+          }
+
+          if(etat==joystick::DOWN) { //bas
+            moveBoat(boat, boat::DOWN);
+            //show(boat);
+            delay(DELAI_DEPLACEMENT);
+            break;
+          }
+
+
+          if(etat==joystick::UP) { //haut
+            moveBoat(boat , boat::UP);
+           // show(boat);
+            delay(DELAI_DEPLACEMENT);
+            break;
+          }
+
+          if(etat==joystick::LONG_PUSH) { //appui long
 
             
-          //########""
-          //A corriger :) 
-          //########""
-
-          case BAS: // bas
-
-            moveBoat(boat, DOWN);
-            delay(DELAI_DEPLACEMENT);
-            break;
-
-
-          case HAUT: //haut
-
-            moveBoat(boat , HIGH);
-            delay(DELAI_DEPLACEMENT);
-            break;
-
-          case APPUI_LONG:
-
-            //lcd.clear();
-            //lcd.print("bateau suivant");
+            println(">>> [Fleet] Location over");
             delay(1000);
-            //lcd.clear(etat);
             delay(DELAI_DEPLACEMENT);
-      
-      break;
-
-  }//Fin switch
+            break;
+          }
 
 
 
-} while (etat!=APPUI_LONG); //joystick var glob
+
+} while (1); //joystick var glob
       //################# END MOVE ##########################
 
 
@@ -168,25 +164,25 @@ bool Fleet::moveBoat(Boat *boat, int direction) {
 
       switch(direction) {
 
-        case 0:
+        case boat::UP:
 
           println("Boat move to up");
           boat->up();
           break;
 
-        case 1:
+        case boat::DOWN:
 
           println("Boat move to down");
           boat->down();
           break;
 
-        case 2:
+        case boat::RIGHT:
 
           println("Boat move to right");
           boat->right();
           break;
 
-        case 3:
+        case boat::LEFT:
 
           println("Boat move to left");
           boat->left();
@@ -224,5 +220,6 @@ bool Fleet::fire(int x, int y) {
 void Fleet::show(Boat *boat) {
 
   _grid->show(boat);
+  println(">>> [Fleet] Display '"+boat->getName()+"' boat");
   
 }//End Fleet::show

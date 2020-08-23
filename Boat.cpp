@@ -4,24 +4,34 @@ Antoine SCAVINER - Nicolas LE GUERROUE
 Fichier de définition de la bibliothèque Boat
 */
 #include "Boat.h"
+#include <SoftwareSerial.h>
 
 /*########################################################
 #  Constructors
 ##########################################################*/
 Boat::Boat() {
-
-  Boat("default_name", 3);
+  SoftwareSerial a(4,5);
+  Boat("default_name", 3, &a, 9600);
 
 }//End Boat::Boat
 
-Boat::Boat(String name, uint8_t length)  {
+Boat::Boat(String name, uint8_t length, SoftwareSerial *debug_comm, unsigned long speed)  {
 
   _direction = 0;
   _name = name;
   _length = length;
 
+  _debug_comm = debug_comm;
+
+
   _x_points = (int *) malloc(sizeof(int)*_length);
   _y_points = (int *) malloc(sizeof(int)*_length);
+
+  debug_comm->begin(speed);
+  debug_comm->println(">>> [Boat] : '"+name+"' - Length = "+String(_length));
+  if(_x_points==nullptr || _y_points==nullptr) {
+    _debug_comm->println("Impossible to create boat");
+  }
 
   //Compute points on y of boat with direction to up and length given
 
@@ -57,6 +67,14 @@ uint8_t Boat::getLength() {
 void Boat::changeOrientation() {
 
   _direction = !(_direction);
+  _debug_comm->println(">>> [Boat] Rotation of '"+_name+"'boat ");
+  computeData();
+
+}//End Boat::changeOrientation
+
+int Boat::getOrientation() {
+
+ return _direction;
 
 }//End Boat::changeOrientation
 
@@ -65,21 +83,20 @@ void Boat::up() {
 
   if(_y!=(_max_size_grid-1) ) { //can up
     _y++;
-    computeData();
-    //std::cout << _y << "++++\n";
+    computeDataMoving();
   }//End if
   else {
-    //std::cout << "-> can't go further (up) \n";
+
   }//End else
 }//End Boat::up
 
 void Boat::down() {
   if(_y!=0) {
     _y--;
-    computeData();
+    computeDataMoving();
   }
   else {
-    //std::cout << "-> can't go further (down) \n";
+
   }//End else
 
 }//End Boat::down
@@ -88,11 +105,9 @@ void Boat::right() {
 
   if(_x!=(_max_size_grid-1)) { //can up
     _x++;
-    computeData();
+    computeDataMoving();
   }//End if
   else {
-
-    //std::cout << "-> can't go further (right) \n";
 
   }//End else
 
@@ -101,10 +116,10 @@ void Boat::right() {
 void Boat::left() {
   if(_x!=0) {
     _x--;
-    computeData();
+    computeDataMoving();
   }
   else {
-    //std::cout << "-> can't go further (left) \n";
+
   }//End else
 
 }//End Boat::left
@@ -112,19 +127,31 @@ void Boat::left() {
 
 void Boat::computeData() {
 
-  if(_direction==RIGHT) {
+  if(_direction==0) {//up
+    for (int i = 0; i < _length; ++i) {  _y_points[i]=_y+i; }//End for
+  }//End if
+  
+  if(_direction==1) { //right
 
-    for (int i = 0; i < _length; ++i) {  _x_points[i]=_x+i; //std::cout << int(_x_points[i])<<"\n";
+    for (int i = 0; i < _length; ++i) {  _x_points[i]=_x+i;
     }//End for
   }//End if
 
-  if(_direction==UP) {
+}//End Boat::computeData
 
-    for (int i = 0; i < _length; ++i) {  _y_points[i]=_y+i;}//End for
+void Boat::computeDataMoving() {
+
+  if(_direction==0) {//up
+    for (int i = 0; i < _length; ++i) {  _y_points[i]=_y+i; _x_points[i]=0;}//End for
+  }//End if
+  
+  if(_direction==1) { //right
+
+    for (int i = 0; i < _length; ++i) {  _x_points[i]=_x+i; _y_points[i]=0; 
+    }//End for
   }//End if
 
-
-}//End Boat::computeData
+}//End Boat::computeDataMoving
 
 bool Boat::isHere(uint8_t x, uint8_t y) {
 
@@ -143,10 +170,19 @@ bool Boat::isHere(uint8_t x, uint8_t y) {
 int **Boat::getData() {
 
     //Create array
-   int ** return_array = malloc(sizeof(int*)*_length );
+   int ** return_array = (int **)malloc(sizeof(int*)*_length );
+
+     if(return_array==nullptr) {
+    for(int i=0;i<50;i++) {
+      digitalWrite(_debug_pin, 1);
+      delay(50);
+      digitalWrite(_debug_pin, 0);
+      delay(50);
+    }
+  }
    for (uint8_t index = 0; index<_length; index++ )
    {
-      return_array[index] = malloc(2*sizeof(int) );
+      return_array[index] = (int *)malloc(2*sizeof(int) );
       return_array[index][0] = _x_points[index];
       return_array[index][1] = _y_points[index];
    }
@@ -158,10 +194,10 @@ int **Boat::getData() {
 int **Boat::getDataSink() {
   
     //Create array
-   int ** return_array = malloc(sizeof(int*)*_length );
+   int ** return_array = (int **)malloc(sizeof(int*)*_length );
    for (uint8_t index = 0; index<_length; index++ )
    {
-      return_array[index] = malloc(2*sizeof(int) );
+      return_array[index] = (int *)malloc(2*sizeof(int) );
       return_array[index][0] = _x_points_removed[index];
       return_array[index][1] = _y_points_removed[index];
    }

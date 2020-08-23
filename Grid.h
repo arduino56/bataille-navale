@@ -20,10 +20,6 @@ class Grid : public LedControl {
 
     byte _address = 0;
 
-
-    
-
-
 };//End class Grid
 
 #endif
