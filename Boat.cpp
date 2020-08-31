@@ -68,7 +68,7 @@ void Boat::changeOrientation() {
 
   _direction = !(_direction);
   _debug_comm->println(">>> [Boat] Rotation of '"+_name+"'boat ");
-  computeData();
+  computeDataMoving();
 
 }//End Boat::changeOrientation
 
@@ -83,7 +83,7 @@ void Boat::up() {
 
   if(_y!=(_max_size_grid-1) ) { //can up
     _y++;
-    computeDataMoving();
+    computeData();
   }//End if
   else {
 
@@ -93,7 +93,7 @@ void Boat::up() {
 void Boat::down() {
   if(_y!=0) {
     _y--;
-    computeDataMoving();
+    computeData();
   }
   else {
 
@@ -105,7 +105,7 @@ void Boat::right() {
 
   if(_x!=(_max_size_grid-1)) { //can up
     _x++;
-    computeDataMoving();
+    computeData();
   }//End if
   else {
 
@@ -116,7 +116,7 @@ void Boat::right() {
 void Boat::left() {
   if(_x!=0) {
     _x--;
-    computeDataMoving();
+    computeData();
   }
   else {
 

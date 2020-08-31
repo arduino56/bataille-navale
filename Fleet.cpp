@@ -98,7 +98,7 @@ bool Fleet::setLocation(Boat *boat) {
  } while(etat!=joystick::LONG_PUSH);
  delay(500);
  println("[Fleet] End rotation");
- delay(2000);
+ delay(200);
  
       //################# END ROTATE ##########################
 
@@ -111,31 +111,31 @@ bool Fleet::setLocation(Boat *boat) {
 
           if(etat==joystick::LEFT) { //gauche
             moveBoat(boat, boat::LEFT);
-            //show(boat);
+            show(boat);
+            println("left");
             delay(DELAI_DEPLACEMENT);
-            break;
           }
 
           if(etat==joystick::RIGHT) { //droite
             moveBoat(boat, boat::RIGHT);
-            //show(boat);
+            show(boat);
+            println("right");
             delay(DELAI_DEPLACEMENT);
-            break;
           }
 
           if(etat==joystick::DOWN) { //bas
             moveBoat(boat, boat::DOWN);
-            //show(boat);
+            show(boat);
+            println("down");
             delay(DELAI_DEPLACEMENT);
-            break;
           }
 
 
           if(etat==joystick::UP) { //haut
             moveBoat(boat , boat::UP);
-           // show(boat);
+            show(boat);
+            println("up");
             delay(DELAI_DEPLACEMENT);
-            break;
           }
 
           if(etat==joystick::LONG_PUSH) { //appui long
@@ -144,7 +144,6 @@ bool Fleet::setLocation(Boat *boat) {
             println(">>> [Fleet] Location over");
             delay(1000);
             delay(DELAI_DEPLACEMENT);
-            break;
           }
 
 
@@ -160,7 +159,7 @@ bool Fleet::setLocation(Boat *boat) {
 
 bool Fleet::moveBoat(Boat *boat, int direction) {
 
-
+      println("Direction"+String(direction));
 
       switch(direction) {
 
